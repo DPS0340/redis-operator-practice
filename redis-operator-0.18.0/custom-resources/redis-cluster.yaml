@@ -1,4 +1,4 @@
-apiVersion: redis.redis.opstreelabs.in/v1beta1
+apiVersion: redis.redis.opstreelabs.in/v1beta2
 kind: RedisCluster
 metadata:
   name: redis-cluster
@@ -6,12 +6,27 @@ metadata:
 spec:
   clusterSize: 3
   clusterVersion: v7
-  securityContext:
+  env:
+    - name: ALLOW_EMPTY_PASSWORD
+      value: "yes"
+    - name: VALKEY_NODES
+      value: "nil"
+  podSecurityContext:
     runAsUser: 1000
     fsGroup: 1000
+  redisLeader:
+    livenessProbe:
+      initialDelaySeconds: 60
+      periodSeconds: 20
+      failureThreshold: 10
+  redisFollower:
+    livenessProbe:
+      initialDelaySeconds: 60
+      periodSeconds: 20
+      failureThreshold: 10
   persistenceEnabled: true
   kubernetesConfig:
-    image: valkey/valkey:7.2.5-alpine3.19
+    image: bitnami/valkey-cluster:7.2.6-debian-12-r0
     imagePullPolicy: IfNotPresent
   storage:
     volumeClaimTemplate:
